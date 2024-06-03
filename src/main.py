@@ -1,6 +1,7 @@
 import os
+import argparse
 
-def main():
+def main(args):
     # 動作モード (sequential, batch)
     process_mode = os.getenv('PROCESS_MODE', 'sequential')
 
@@ -10,13 +11,13 @@ def main():
         # openai/gpt-4
         if name_judge == 'openai/gpt-4':
             from judges.openai.gpt_4 import sequential_process
-            sequential_process.main()
+            sequential_process.main(args)
             return
 
         # cohere/command-r-plus
         elif name_judge == 'cohere/command-r-plus':
             from judges.cohere.command_r_plus import sequential_process
-            sequential_process.main()
+            sequential_process.main(args)
             return
 
         # TODO: ローカルモデル
@@ -51,4 +52,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    args = argparse.ArgumentParser()
+    args.add_argument("--japanese", action="store_true")
+    args = args.parse_args()
+    main(args)

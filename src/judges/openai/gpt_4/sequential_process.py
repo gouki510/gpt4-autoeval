@@ -9,9 +9,9 @@ from lib.client_openai import client, template_prompt
 from lib.common import read_jsonl
 from lib.common import validate_response, get_openai_request_body
 from . import openai_judge
+import re
 
-
-def main():
+def main(args):
     # Load dataset
     dataset_name = os.environ.get('DATASET_NAME', 'test')
     preds = read_jsonl(f"assets/{dataset_name}/preds.jsonl")
@@ -24,8 +24,11 @@ def main():
             input_text = eval_data["input_text"]
             output_text = eval_data["output_text"]
             eval_aspect = eval_data["eval_aspect"]
-
-            result = openai_judge.evaluate(pred, input_text, output_text, eval_aspect)
+            if args.japanese:
+                if re.search(r'[ぁ-ん]+|[ァ-ヴー]+|[一-龠]+', pred):
+                    result = openai_judge.evaluate(pred, input_text, output_text, eval_aspect)
+                else:
+                    result = {"reason": "No Japanese", "grade": 1}
             writer.write(result)
 
             print(f"==============================")

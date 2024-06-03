@@ -5,7 +5,7 @@ def get_openai_request_body(prompt):
     Prepare the request body for OpenAI API
     """
     return {
-        "model": "gpt-4-1106-preview",
+        "model": "gpt-4o",
         "response_format": { "type": "json_object" },
         "messages": [
             {"role": "user", "content": prompt}
