@@ -27,7 +27,7 @@ def evaluate(pred, input_text, output_text, eval_aspect, evaluator_name="gpt-4o"
     )
 
     response_raw = completion_with_backoff(
-        **get_openai_request_body(prompt)
+        **get_openai_request_body(prompt, evaluator_name)
     )
     response = json.loads(response_raw.choices[0].message.content)
 
