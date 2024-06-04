@@ -8,7 +8,7 @@ from lib.client_openai import client, template_prompt
 
 
 @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(10))
-def evaluate(pred, input_text, output_text, eval_aspect):
+def evaluate(pred, input_text, output_text, eval_aspect, evaluator_name="gpt-4o"):
     """OpenAI API により評価を行う
     Args:
     Returns:

@@ -26,7 +26,7 @@ def main(args):
             eval_aspect = eval_data["eval_aspect"]
             if args.japanese:
                 if re.search(r'[ぁ-ん]+|[ァ-ヴー]+|[一-龠]+', pred):
-                    result = openai_judge.evaluate(pred, input_text, output_text, eval_aspect)
+                    result = openai_judge.evaluate(pred, input_text, output_text, eval_aspect, args.evaluator)
                 else:
                     result = {"reason": "No Japanese", "grade": 1}
             writer.write(result)

@@ -54,5 +54,6 @@ def main(args):
 if __name__ == "__main__":
     args = argparse.ArgumentParser()
     args.add_argument("--japanese", action="store_true")
+    args.add_argument("--evaluator", type=str, default="gpt-4o")
     args = args.parse_args()
     main(args)
