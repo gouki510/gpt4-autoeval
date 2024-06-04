@@ -29,6 +29,8 @@ def main(args):
                     result = openai_judge.evaluate(pred, input_text, output_text, eval_aspect, args.evaluator)
                 else:
                     result = {"reason": "No Japanese", "grade": 1}
+            else:
+                result = openai_judge.evaluate(pred, input_text, output_text, eval_aspect, args.evaluator)
             writer.write(result)
 
             print(f"==============================")
