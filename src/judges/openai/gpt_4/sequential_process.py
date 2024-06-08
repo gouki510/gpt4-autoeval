@@ -26,11 +26,11 @@ def main(args):
 
     with jsonlines.open(f'assets/{dataset_name}/result.jsonl', mode='w') as writer:
         # Evaluate each sample of the dataset, and write the result to the file
-        pred = pred_data["pred"]
-        input_text = eval_data["input_text"]
-        output_text = eval_data["output_text"]
-        eval_aspect = eval_data["eval_aspect"]
         for eval_data, pred_data in zip(dataset, preds):
+            pred = pred_data["pred"]
+            input_text = eval_data["input_text"]
+            output_text = eval_data["output_text"]
+            eval_aspect = eval_data["eval_aspect"]
             for i in range(MAX_RETRIES + 1):
                 sleep_time = T_BASE ** (i - 1)
                 try:
