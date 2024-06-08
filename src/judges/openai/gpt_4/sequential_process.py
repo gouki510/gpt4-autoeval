@@ -10,6 +10,13 @@ from lib.common import read_jsonl
 from lib.common import validate_response, get_openai_request_body
 from . import openai_judge
 import re
+import time
+
+from openai import APIConnectionError, APITimeoutError, InternalServerError, RateLimitError, UnprocessableEntityError
+
+MAX_RETRIES = 5
+T_BASE = 2
+
 
 def main(args):
     # Load dataset
@@ -19,18 +26,34 @@ def main(args):
 
     with jsonlines.open(f'assets/{dataset_name}/result.jsonl', mode='w') as writer:
         # Evaluate each sample of the dataset, and write the result to the file
+        pred = pred_data["pred"]
+        input_text = eval_data["input_text"]
+        output_text = eval_data["output_text"]
+        eval_aspect = eval_data["eval_aspect"]
         for eval_data, pred_data in zip(dataset, preds):
-            pred = pred_data["pred"]
-            input_text = eval_data["input_text"]
-            output_text = eval_data["output_text"]
-            eval_aspect = eval_data["eval_aspect"]
-            if args.japanese:
-                if re.search(r'[ぁ-ん]+|[ァ-ヴー]+|[一-龠]+', pred):
-                    result = openai_judge.evaluate(pred, input_text, output_text, eval_aspect, args.evaluator)
-                else:
-                    result = {"reason": "No Japanese", "grade": 1}
-            else:
-                result = openai_judge.evaluate(pred, input_text, output_text, eval_aspect, args.evaluator)
+            for i in range(MAX_RETRIES + 1):
+                sleep_time = T_BASE ** (i - 1)
+                try:
+                    if args.japanese:
+                        if re.search(r'[ぁ-ん]+|[ァ-ヴー]+|[一-龠]+', pred):
+                            result = openai_judge.evaluate(pred, input_text, output_text, eval_aspect, args.evaluator)
+                        else:
+                            result = {"reason": "No Japanese", "grade": 1}
+                    else:
+                        result = openai_judge.evaluate(pred, input_text, output_text, eval_aspect, args.evaluator)
+                    break
+                # ネット周り, レートリミット
+                except (
+                    RateLimitError,
+                    APIConnectionError,
+                    APITimeoutError,
+                    UnprocessableEntityError,
+                    InternalServerError,
+                ) as e:
+                    if i == MAX_RETRIES:
+                        raise e
+                time.sleep(sleep_time)
+            
             writer.write(result)
 
             print(f"==============================")
