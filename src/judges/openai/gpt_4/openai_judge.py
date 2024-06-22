@@ -4,7 +4,7 @@ from openai import OpenAI
 from tenacity import retry, stop_after_attempt, wait_random_exponential
 
 from lib.common import validate_response, get_openai_request_body
-from lib.client_openai import client, template_prompt
+from lib.client_openai import client, template_prompt, azure_client
 
 
 @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(10))
@@ -26,9 +26,15 @@ def evaluate(pred, input_text, output_text, eval_aspect, evaluator_name="gpt-4o"
         pred=pred,
     )
 
-    response_raw = completion_with_backoff(
-        **get_openai_request_body(prompt, evaluator_name)
-    )
+    if "pj-absol" in evaluator_name:
+        response_raw = azure_completion_with_backoff(
+            **get_openai_request_body(prompt, evaluator_name)
+        )
+    else:
+        response_raw = completion_with_backoff(
+            **get_openai_request_body(prompt, evaluator_name)
+        )
+
     response = json.loads(response_raw.choices[0].message.content)
 
     validate_response(response)
@@ -38,3 +44,6 @@ def evaluate(pred, input_text, output_text, eval_aspect, evaluator_name="gpt-4o"
 
 def completion_with_backoff(**kwargs):
     return client.chat.completions.create(**kwargs)
+
+def azure_completion_with_backoff(**kwargs):
+    return azure_client.chat.completions.create(**kwargs)
